@@ -1,0 +1,52 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories (vendor dir if not using Go modules)
+vendor/
+
+# Go modules
+go.sum
+
+# Environment variables
+.env
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Coverage reports
+coverage.out
+
+# Build directories
+build/
+bin/
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.old
+
+# Debugging and profiling tools
+debug/
+trace.out
+pprof/
+
+# GoLand/IntelliJ specific files
+*.iml
