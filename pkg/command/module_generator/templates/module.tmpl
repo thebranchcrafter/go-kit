@@ -1,0 +1,27 @@
+package {{.PackageName}}
+
+import "github.com/thebranchcrafter/go-kit/pkg/infrastructure/app"
+
+type {{.ClassName}}Module struct {
+	*app.BaseModule
+}
+
+func (u *{{.ClassName}}Module) Routes() []app.Route {
+	return []app.Route{
+
+	}
+}
+
+func Init{{.ClassName}}Module(d app.CommonDependencies) *{{.ClassName}}Module {
+	um := &{{.ClassName}}Module{
+		&app.BaseModule{
+			CommonDependencies: d,
+		},
+	}
+
+	return um
+}
+
+func (u *{{.ClassName}}Module) Name() string {
+	return "{{.PackageName}}_module"
+}

@@ -1,0 +1,149 @@
+package {{.PackageName}}_infrastructure
+
+import (
+	"context"
+	{{.PackageName}}_domain "{{.FullModuleName}}/internal/app/module/{{.PackageName}}/domain"
+	"github.com/Masterminds/squirrel"
+    "github.com/jackc/pgx/v4/pgxpool"
+    "time"
+)
+
+var columns = []string{"id", "created_at", "updated_at"}
+
+// Postgres{{.ModuleName}}Repository is a Postgres implementation of {{.ModuleName}}Repository using Squirrel and pgxpool.
+type Postgres{{.ModuleName}}Repository struct {
+	tableName string
+	DB        *pgxpool.Pool
+}
+
+// NewPostgres{{.ModuleName}}Repository initializes a new Postgres {{.ModuleName}} repository with a connection pool.
+func NewPostgres{{.ModuleName}}Repository(poolConfig string) (*Postgres{{.ModuleName}}Repository, error) {
+	pool, err := pgxpool.Connect(context.Background(), poolConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Postgres{{.ModuleName}}Repository{
+		DB: pool,
+	}, nil
+}
+
+// Save creates or updates a {{.ModuleName}} record.
+func (r *Postgres{{.ModuleName}}Repository) Save(ctx context.Context, {{.ClassInitial}} *{{.PackageName}}_domain.{{.ClassName}}) error {
+	query := squirrel.Insert(r.tableName).
+		Columns(columns...).
+		Values({{.ClassInitial}}.Id(), {{.ClassInitial}}.CreatedAt(), {{.ClassInitial}}.UpdatedAt()).
+		Suffix("ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at").
+		PlaceholderFormat(squirrel.Dollar)
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.DB.Exec(ctx, sqlQuery, args...)
+	return err
+}
+
+// GetByID retrieves a {{.ModuleName}} by its ID.
+func (r *Postgres{{.ModuleName}}Repository) GetByID(ctx context.Context, id {{.PackageName}}_domain.{{.ClassName}}Id) (*{{.PackageName}}_domain.{{.ClassName}}, error) {
+	queryBuilder := squirrel.Select(columns...).
+		From(r.tableName).
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+
+	sqlQuery, args, err := queryBuilder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	row := r.DB.QueryRow(ctx, sqlQuery, args...)
+	return scanRow(row)
+}
+
+// GetAll retrieves all {{.ModuleName}} records, with optional filters.
+func (r *Postgres{{.ModuleName}}Repository) GetAll(ctx context.Context, filters map[string]interface{}) ([]*{{.PackageName}}_domain.{{.ClassName}}, error) {
+	query := squirrel.Select(columns...).
+		From(r.tableName).
+		PlaceholderFormat(squirrel.Dollar)
+
+	for key, value := range filters {
+		query = query.Where(squirrel.Eq{key: value})
+	}
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.DB.Query(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []*{{.PackageName}}_domain.{{.ClassName}}
+	for rows.Next() {
+		{{.PackageName}}, err := scanRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, {{.PackageName}})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+// Update modifies an existing {{.ModuleName}} record.
+func (r *Postgres{{.ModuleName}}Repository) Update(ctx context.Context, {{.ClassInitial}} *{{.PackageName}}_domain.{{.ClassName}}) error {
+	query := squirrel.Update(r.tableName).
+		Set("updated_at", {{.ClassInitial}}.UpdatedAt()).
+		Where(squirrel.Eq{"id": {{.ClassInitial}}.Id()}).
+		PlaceholderFormat(squirrel.Dollar)
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.DB.Exec(ctx, sqlQuery, args...)
+	return err
+}
+
+// Delete removes a {{.ModuleName}} by its ID.
+func (r *Postgres{{.ModuleName}}Repository) Delete(ctx context.Context, id {{.PackageName}}_domain.{{.ClassName}}Id) error {
+	query := squirrel.Delete(r.tableName).
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.DB.Exec(ctx, sqlQuery, args...)
+	return err
+}
+
+// scanRow scans a row into a {{.ModuleName}} domain object.
+func scanRow(row squirrel.RowScanner) (*{{.PackageName}}_domain.{{.ClassName}}, error) {
+	var (
+		id        string
+		createdAt time.Time
+		updatedAt time.Time
+	)
+
+	err := row.Scan(&id, &createdAt, &updatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return {{.PackageName}}_domain.FromPrimitives(
+		id,
+		createdAt,
+		updatedAt,
+	), nil
+}

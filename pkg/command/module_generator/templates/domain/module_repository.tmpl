@@ -1,0 +1,20 @@
+package {{.PackageName}}_domain
+
+import "context"
+
+type {{.ClassName}}Repository interface {
+	// Save a new {{.ClassName}}
+	Save(ctx context.Context, {{.ClassInitial}} *{{.ClassName}}) error
+
+	// GetByID a {{.ClassName}} by its ID
+	GetByID(ctx context.Context, id {{.ClassName}}Id) (*{{.ClassName}}, error)
+
+	// GetAll {{.ClassName}} with optional filters (if necessary)
+	GetAll(ctx context.Context, filters map[string]interface{}) ([]*{{.ClassName}}, error)
+
+	// Update an existing {{.ClassName}}
+	Update(ctx context.Context, {{.ClassInitial}} *{{.ClassName}}) error
+
+	// Delete a {{.ClassName}} by its ID
+	Delete(ctx context.Context, id {{.ClassName}}Id) error
+}

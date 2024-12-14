@@ -1,0 +1,33 @@
+package {{.PackageName}}_domain
+
+import (
+	"time"
+)
+
+type {{.ClassName}}Id string
+
+type {{.ClassName}} struct {
+	id                {{.ClassName}}Id
+	createdAt         time.Time
+	updatedAt         time.Time
+}
+
+func (t *{{.ClassName}}) Id() {{.ClassName}}Id {
+	return t.id
+}
+
+func (t *{{.ClassName}}) CreatedAt() time.Time {
+	return t.createdAt
+}
+
+func (t *{{.ClassName}}) UpdatedAt() time.Time {
+	return t.updatedAt
+}
+
+func FromPrimitives(id string, createdAt, updatedAt time.Time) *{{.ClassName}} {
+	return &{{.ClassName}}{
+		id:        {{.ClassName}}Id(id),
+		createdAt: createdAt,
+		updatedAt: updatedAt,
+	}
+}
