@@ -9,10 +9,12 @@ import (
 	"strings"
 )
 
+var binaryName = "hexago-generator"
+
 func main() {
 	// Root command
 	rootCmd := &cobra.Command{
-		Use:   "cli",
+		Use:   binaryName,
 		Short: "CLI tool for generating modules and components",
 	}
 
