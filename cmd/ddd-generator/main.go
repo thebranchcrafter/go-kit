@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var binaryName = "hexago-generator"
+var binaryName = "ddd-generator"
 
 func main() {
 	// Root command
