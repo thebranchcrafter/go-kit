@@ -100,7 +100,7 @@ Generate a module named 'user':
 
 			fmt.Printf("Generating module: %s\n", bold(moduleName))
 
-			g := module_generator.NewGeneratorService(module_generator.NewFileCreator("pkg/command/module_generator/templates/"))
+			g := module_generator.NewGeneratorService(module_generator.NewFileCreator())
 
 			err := g.Execute(moduleName)
 			if err != nil {

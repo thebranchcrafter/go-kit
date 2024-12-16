@@ -2,6 +2,7 @@ package module_generator
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/iancoleman/strcase"
@@ -21,14 +22,13 @@ var (
 	}
 )
 
-type FileCreator struct {
-	tmplDir string
-}
+//go:embed templates/*
+var templatesFS embed.FS
 
-func NewFileCreator(tmplDir string) *FileCreator {
-	return &FileCreator{
-		tmplDir: tmplDir,
-	}
+type FileCreator struct{}
+
+func NewFileCreator() *FileCreator {
+	return &FileCreator{}
 }
 
 func (c FileCreator) Create(moduleName string, basePath string, packageName string) error {
@@ -52,11 +52,10 @@ func (c FileCreator) Create(moduleName string, basePath string, packageName stri
 		// Render the file path
 		filePath := renderTemplate(filePathTemplate, data)
 
-		fullTemplatePath := c.tmplDir + fileTemplatePath
-		// Read the file template content
-		fileContent, err := readTemplateFile(fullTemplatePath)
+		// Read the template content from embedded FS
+		fileContent, err := readTemplateFile(fileTemplatePath)
 		if err != nil {
-			return fmt.Errorf("failed to read template file '%s': %w", fullTemplatePath, err)
+			return fmt.Errorf("failed to read template file '%s': %w", fileTemplatePath, err)
 		}
 
 		// Render the file content
@@ -94,9 +93,9 @@ func (c *FileCreator) createDirectories(basePath string) error {
 	return nil
 }
 
-// readTemplateFile reads the content of a template file
+// readTemplateFile reads the content of a template file from the embedded FS
 func readTemplateFile(filePath string) (string, error) {
-	content, err := os.ReadFile(filePath)
+	content, err := templatesFS.ReadFile(fmt.Sprintf("templates/%s", filePath))
 	if err != nil {
 		return "", fmt.Errorf("could not read template file: %w", err)
 	}

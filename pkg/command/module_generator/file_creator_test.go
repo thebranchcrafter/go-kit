@@ -9,7 +9,7 @@ import (
 )
 
 func TestFileCreatorForTestModule(t *testing.T) {
-	fc := module_generator.NewFileCreator("./templates/")
+	fc := module_generator.NewFileCreator()
 
 	moduleName := "test_module"
 	err := createTestFolder()
