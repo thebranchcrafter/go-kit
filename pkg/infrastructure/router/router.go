@@ -1,17 +1,19 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/mik3lon/starter-template/pkg/router"
 	"net/http"
 )
 
-type Middleware func(http.HandlerFunc) http.HandlerFunc
+type Middleware func(gin.HandlerFunc) gin.HandlerFunc
 
 // Route represents an HTTP route with its method, path, handler, and middleware.
 type Route struct {
 	Method      string
 	Path        string
-	Handler     http.HandlerFunc
-	Middlewares []Middleware
+	Handler     gin.HandlerFunc
+	Middlewares []router.Middleware
 }
 
 type Router interface {

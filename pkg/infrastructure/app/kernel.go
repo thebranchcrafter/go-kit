@@ -2,17 +2,17 @@ package app
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"net/http"
 
 	"github.com/thebranchcrafter/go-kit/pkg/bus/command"
 	"github.com/thebranchcrafter/go-kit/pkg/bus/query"
 	http_response "github.com/thebranchcrafter/go-kit/pkg/infrastructure/http/response"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/logger"
-	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/router"
 )
 
 type CommonDependencies struct {
-	Router         router.Router
+	Router         *gin.Engine
 	CommandBus     command.Bus
 	QueryBus       query.Bus
 	ResponseWriter http_response.ResponseWriter
@@ -38,7 +38,7 @@ func NewKernel(options ...func(*Kernel)) *Kernel {
 }
 
 // WithRouter sets a custom router implementation.
-func WithRouter(r router.Router) func(*Kernel) {
+func WithRouter(r *gin.Engine) func(*Kernel) {
 	return func(k *Kernel) {
 		k.Router = r
 		if k.server != nil {
@@ -65,13 +65,6 @@ func WithQueryBus(qb query.Bus) func(*Kernel) {
 func WithLogger(l logger.Logger) func(*Kernel) {
 	return func(k *Kernel) {
 		k.Logger = l
-	}
-}
-
-// WithServer sets a custom HTTP server.
-func WithServer(s *http.Server) func(*Kernel) {
-	return func(k *Kernel) {
-		k.server = s
 	}
 }
 
@@ -124,10 +117,12 @@ func (k *Kernel) RegisterRoutes() {
 }
 
 // StartServer starts the HTTP server.
-func (k *Kernel) StartServer() error {
-	if k.server.Handler == nil && k.Router != nil {
-		k.server.Handler = k.Router.Handler()
+func (k *Kernel) StartServer(port string) error {
+	k.server = &http.Server{
+		Addr:    port,
+		Handler: k.Router.Handler(),
 	}
+
 	return k.server.ListenAndServe()
 }
 

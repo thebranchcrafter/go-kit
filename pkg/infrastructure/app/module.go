@@ -2,11 +2,11 @@ package app
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/thebranchcrafter/go-kit/pkg/bus"
 	"github.com/thebranchcrafter/go-kit/pkg/bus/command"
 	"github.com/thebranchcrafter/go-kit/pkg/bus/query"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/router"
-	"net/http"
 )
 
 type Modules []Module
@@ -15,7 +15,7 @@ type Modules []Module
 type Route struct {
 	Method      string
 	Path        string
-	Handler     http.HandlerFunc
+	Handler     gin.HandlerFunc
 	Middlewares []router.Middleware
 }
 

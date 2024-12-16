@@ -1,10 +1,9 @@
 package gin_router
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/router"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type GinRouter struct {
@@ -12,32 +11,29 @@ type GinRouter struct {
 }
 
 func NewGinRouter() *GinRouter {
-	// gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
-
-	return &GinRouter{
-		engine: engine,
-	}
+	return &GinRouter{engine: engine}
 }
 
-func (g *GinRouter) Handle(method, path string, handler http.HandlerFunc, middleware ...router.Middleware) {
-	// Wrap the http.HandlerFunc into a gin.HandlerFunc
-	ginHandler := gin.WrapH(handler)
-
+func (g *GinRouter) Handle(method, path string, handler gin.HandlerFunc, middleware ...router.Middleware) {
+	// Wrap the gin.HandlerFunc with middleware
+	finalHandler := handler
 	for _, m := range middleware {
-		ginHandler = wrapMiddlewareGin(m, ginHandler)
+		finalHandler = m(finalHandler)
 	}
 
 	// Register the route
 	switch method {
 	case http.MethodGet:
-		g.engine.GET(path, ginHandler)
+		g.engine.GET(path, finalHandler)
 	case http.MethodPost:
-		g.engine.POST(path, ginHandler)
+		g.engine.POST(path, finalHandler)
 	case http.MethodPut:
-		g.engine.PUT(path, ginHandler)
+		g.engine.PUT(path, finalHandler)
 	case http.MethodDelete:
-		g.engine.DELETE(path, ginHandler)
+		g.engine.DELETE(path, finalHandler)
+	default:
+		panic("unsupported HTTP method: " + method)
 	}
 }
 
@@ -49,16 +45,6 @@ func (g *GinRouter) Handler() http.Handler {
 	return g.engine
 }
 
-func (g *GinRouter) ServeStatic(url, absPath string) http.Handler {
+func (g *GinRouter) ServeStatic(url, absPath string) {
 	g.engine.Static(url, absPath)
-	return g.engine
-}
-
-// Wrap middleware from router.Middleware to gin.HandlerFunc
-func wrapMiddlewareGin(m router.Middleware, next gin.HandlerFunc) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		m(func(w http.ResponseWriter, r *http.Request) {
-			next(c)
-		})(c.Writer, c.Request)
-	}
 }
