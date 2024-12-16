@@ -49,6 +49,11 @@ func (g *GinRouter) Handler() http.Handler {
 	return g.engine
 }
 
+func (g *GinRouter) ServeStatic(url, absPath string) http.Handler {
+	g.engine.Static(url, absPath)
+	return g.engine
+}
+
 // Wrap middleware from router.Middleware to gin.HandlerFunc
 func wrapMiddlewareGin(m router.Middleware, next gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {

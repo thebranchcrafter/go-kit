@@ -18,4 +18,5 @@ type Router interface {
 	Handle(method, path string, handler http.HandlerFunc, middleware ...Middleware)
 	Serve(addr string) error
 	Handler() http.Handler
+	ServeStatic(url, absPath string) http.Handler
 }

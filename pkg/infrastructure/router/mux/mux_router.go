@@ -35,3 +35,10 @@ func (m *MuxRouter) Serve(addr string) error {
 func (m *MuxRouter) Handler() http.Handler {
 	return m.router
 }
+
+func (m *MuxRouter) ServeStatic(url, absPath string) http.Handler {
+	fileServer := http.FileServer(http.Dir(absPath))
+	m.router.PathPrefix(url).Handler(http.StripPrefix(url, fileServer))
+
+	return fileServer
+}
