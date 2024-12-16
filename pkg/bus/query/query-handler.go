@@ -2,9 +2,9 @@ package query
 
 import (
 	"context"
-	"github.com/mik3lon/starter-template/pkg/bus"
+	"github.com/thebranchcrafter/go-kit/pkg/bus"
 )
 
 type QueryHandler interface {
-	Handle(ctx context.Context, query bus.Dto) (interface{}, error)
+	Handle(ctx context.Context, query bus.Query) (interface{}, error)
 }
