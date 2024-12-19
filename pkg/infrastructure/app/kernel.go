@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/thebranchcrafter/go-kit/pkg/bus/event"
 	"net/http"
 
 	"github.com/thebranchcrafter/go-kit/pkg/bus/command"
@@ -15,6 +16,7 @@ type CommonDependencies struct {
 	Router         *gin.Engine
 	CommandBus     command.Bus
 	QueryBus       query.Bus
+	EventBus       event.EventBus
 	ResponseWriter http_response.ResponseWriter
 	Logger         logger.Logger
 }
@@ -51,6 +53,13 @@ func WithRouter(r *gin.Engine) func(*Kernel) {
 func WithCommandBus(cb command.Bus) func(*Kernel) {
 	return func(k *Kernel) {
 		k.CommandBus = cb
+	}
+}
+
+// WithEventBus sets a custom WithEventBus.
+func WithEventBus(eb event.EventBus) func(*Kernel) {
+	return func(k *Kernel) {
+		k.EventBus = eb
 	}
 }
 
