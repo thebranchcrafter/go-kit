@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mik3lon/starter-template/pkg/router"
 	"net/http"
 )
 
@@ -13,7 +12,7 @@ type Route struct {
 	Method      string
 	Path        string
 	Handler     gin.HandlerFunc
-	Middlewares []router.Middleware
+	Middlewares []Middleware
 }
 
 type Router interface {
