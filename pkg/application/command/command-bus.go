@@ -1,17 +1,17 @@
-package command
+package application_command
 
 import (
 	"context"
-	"github.com/thebranchcrafter/go-kit/pkg/bus"
+	"github.com/thebranchcrafter/go-kit/pkg/application"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/logger"
 	"reflect"
 	"sync"
 )
 
 type Bus interface {
-	RegisterCommand(c bus.Command, handler CommandHandler) error
-	Dispatch(ctx context.Context, c bus.Command) error
-	DispatchAsync(ctx context.Context, c bus.Command) error
+	RegisterCommand(c application.Command, handler CommandHandler) error
+	Dispatch(ctx context.Context, c application.Command) error
+	DispatchAsync(ctx context.Context, c application.Command) error
 	ProcessFailed(ctx context.Context)
 }
 
@@ -32,7 +32,7 @@ func InitCommandBus(l logger.Logger) *CommandBus {
 }
 
 type FailedCommand struct {
-	command        bus.Dto
+	command        application.Dto
 	handler        CommandHandler
 	timesProcessed int
 }
@@ -63,7 +63,7 @@ func NewCommandNotRegistered(message string, commandName string) CommandNotRegis
 	return CommandNotRegistered{message: message, commandName: commandName}
 }
 
-func (bus *CommandBus) RegisterCommand(c bus.Command, handler CommandHandler) error {
+func (bus *CommandBus) RegisterCommand(c application.Command, handler CommandHandler) error {
 	bus.lock.Lock()
 	defer bus.lock.Unlock()
 
@@ -81,7 +81,7 @@ func (bus *CommandBus) RegisterCommand(c bus.Command, handler CommandHandler) er
 	return nil
 }
 
-func (bus *CommandBus) Dispatch(ctx context.Context, c bus.Command) error {
+func (bus *CommandBus) Dispatch(ctx context.Context, c application.Command) error {
 	commandName, err := bus.commandName(c)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (bus *CommandBus) Dispatch(ctx context.Context, c bus.Command) error {
 	return NewCommandNotRegistered("Command not registered", *commandName)
 }
 
-func (bus *CommandBus) DispatchAsync(ctx context.Context, c bus.Command) error {
+func (bus *CommandBus) DispatchAsync(ctx context.Context, c application.Command) error {
 	commandName, err := bus.commandName(c)
 	if err != nil {
 		return err
@@ -114,11 +114,11 @@ func (bus *CommandBus) DispatchAsync(ctx context.Context, c bus.Command) error {
 	return NewCommandNotRegistered("Command not registered", *commandName)
 }
 
-func (bus *CommandBus) doHandle(ctx context.Context, handler CommandHandler, c bus.Command) error {
+func (bus *CommandBus) doHandle(ctx context.Context, handler CommandHandler, c application.Command) error {
 	return handler.Handle(ctx, c)
 }
 
-func (bus *CommandBus) doHandleAsync(ctx context.Context, handler CommandHandler, command bus.Dto) {
+func (bus *CommandBus) doHandleAsync(ctx context.Context, handler CommandHandler, command application.Dto) {
 	err := bus.doHandle(ctx, handler, command)
 
 	if err != nil {

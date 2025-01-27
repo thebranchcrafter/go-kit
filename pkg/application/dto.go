@@ -1,4 +1,4 @@
-package bus
+package application
 
 type Dto interface {
 	Id() string

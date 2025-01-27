@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thebranchcrafter/go-kit/pkg/command/module_generator"
+	module_application "github.com/thebranchcrafter/go-kit/internal/module/application"
+	module_domain "github.com/thebranchcrafter/go-kit/internal/module/domain"
+	"github.com/thebranchcrafter/go-kit/pkg/utils"
 	"os"
 	"strings"
 )
@@ -23,7 +26,7 @@ func main() {
 
 	// Execute the root command
 	if err := rootCmd.Execute(); err != nil {
-		color.New(color.FgRed).Printf("Error: %v\n", err)
+		_, _ = color.New(color.FgRed).Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -80,35 +83,36 @@ Generate a module named 'user':
     ├── module.go
 `),
 		Run: func(cmd *cobra.Command, args []string) {
-			yellow := color.New(color.FgYellow).SprintFunc()
-			red := color.New(color.FgRed).SprintFunc()
-			green := color.New(color.FgGreen).SprintFunc()
-			bold := color.New(color.Bold).SprintFunc()
-
-			// Check if the module name is provided as a flag
-			if moduleName == "" {
-				fmt.Print(yellow("Enter the module name: "))
-				fmt.Scanln(&moduleName)
+			// Prompt user for module name
+			utils.PrintYellow("Enter the module name: ")
+			_, err := fmt.Scanln(&moduleName)
+			if err != nil {
+				panic(err)
 			}
 
-			// Validate the module name
+			// Trim and validate input
 			moduleName = strings.ToLower(strings.TrimSpace(moduleName))
 			if moduleName == "" {
-				fmt.Println(red(bold("Error:")) + " Module name cannot be empty")
+				utils.PrintRed("Error: Module name cannot be empty")
 				os.Exit(1)
 			}
 
-			fmt.Printf("Generating module: %s\n", bold(moduleName))
+			// Print progress
+			utils.PrintCyan(fmt.Sprintf("Generating module: %s", moduleName))
 
-			g := module_generator.NewGeneratorService(module_generator.NewFileCreator())
+			handler := module_application.NewGenerateModuleCommandHandler(
+				module_domain.NewVariablesGenerator(),
+				module_domain.NewTemplateGenerator(),
+			)
 
-			err := g.Execute(moduleName)
-			if err != nil {
-				fmt.Println(red(bold("Error generating module:")) + " " + err.Error())
+			// Handle errors
+			if err := handler.Handle(context.Background(), module_application.GenerateModuleCommand{ModuleName: moduleName}); err != nil {
+				utils.PrintRed(fmt.Sprintf("Error generating module: %v", err))
 				os.Exit(1)
 			}
 
-			fmt.Println(green(bold(fmt.Sprintf("Module '%s' generated successfully!", moduleName))))
+			// Print success
+			utils.PrintGreen(fmt.Sprintf("Module '%s' generated successfully!", moduleName))
 		},
 	}
 

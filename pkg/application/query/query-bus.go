@@ -1,15 +1,15 @@
-package query
+package application_query
 
 import (
 	"context"
-	"github.com/thebranchcrafter/go-kit/pkg/bus"
+	"github.com/thebranchcrafter/go-kit/pkg/application"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/logger"
 	"sync"
 )
 
 type Bus interface {
-	RegisterQuery(query bus.Query, handler QueryHandler) error
-	Ask(ctx context.Context, q bus.Query) (interface{}, error)
+	RegisterQuery(query application.Query, handler QueryHandler) error
+	Ask(ctx context.Context, q application.Query) (interface{}, error)
 }
 
 type QueryBus struct {
@@ -52,7 +52,7 @@ func NewQueryNotRegistered(message string, queryName string) QueryAlreadyRegiste
 	return QueryAlreadyRegistered{message: message, queryName: queryName}
 }
 
-func (bus *QueryBus) RegisterQuery(query bus.Query, handler QueryHandler) error {
+func (bus *QueryBus) RegisterQuery(query application.Query, handler QueryHandler) error {
 	bus.lock.Lock()
 	defer bus.lock.Unlock()
 
@@ -67,7 +67,7 @@ func (bus *QueryBus) RegisterQuery(query bus.Query, handler QueryHandler) error 
 	return nil
 }
 
-func (bus *QueryBus) Ask(ctx context.Context, query bus.Query) (interface{}, error) {
+func (bus *QueryBus) Ask(ctx context.Context, query application.Query) (interface{}, error) {
 	queryName := query.Id()
 
 	if handler, ok := bus.handlers[queryName]; ok {
@@ -82,7 +82,7 @@ func (bus *QueryBus) Ask(ctx context.Context, query bus.Query) (interface{}, err
 	return nil, NewQueryNotRegistered("Query not registered", queryName)
 }
 
-func (bus *QueryBus) doAsk(ctx context.Context, handler QueryHandler, query bus.Query) (interface{}, error) {
+func (bus *QueryBus) doAsk(ctx context.Context, handler QueryHandler, query application.Query) (interface{}, error) {
 	return handler.Handle(ctx, query)
 }
 

@@ -3,20 +3,20 @@ package app
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/thebranchcrafter/go-kit/pkg/bus/event"
+	application_command "github.com/thebranchcrafter/go-kit/pkg/application/command"
+	application_event "github.com/thebranchcrafter/go-kit/pkg/application/event"
+	application_query "github.com/thebranchcrafter/go-kit/pkg/application/query"
 	"net/http"
 
-	"github.com/thebranchcrafter/go-kit/pkg/bus/command"
-	"github.com/thebranchcrafter/go-kit/pkg/bus/query"
 	http_response "github.com/thebranchcrafter/go-kit/pkg/infrastructure/http/response"
 	"github.com/thebranchcrafter/go-kit/pkg/infrastructure/logger"
 )
 
 type CommonDependencies struct {
 	Router         *gin.Engine
-	CommandBus     command.Bus
-	QueryBus       query.Bus
-	EventBus       event.EventBus
+	CommandBus     application_command.Bus
+	QueryBus       application_query.Bus
+	EventBus       application_event.Bus
 	ResponseWriter http_response.ResponseWriter
 	Logger         logger.Logger
 }
@@ -50,21 +50,21 @@ func WithRouter(r *gin.Engine) func(*Kernel) {
 }
 
 // WithCommandBus sets a custom CommandBus.
-func WithCommandBus(cb command.Bus) func(*Kernel) {
+func WithCommandBus(cb application_command.Bus) func(*Kernel) {
 	return func(k *Kernel) {
 		k.CommandBus = cb
 	}
 }
 
 // WithEventBus sets a custom WithEventBus.
-func WithEventBus(eb event.EventBus) func(*Kernel) {
+func WithEventBus(eb application_event.Bus) func(*Kernel) {
 	return func(k *Kernel) {
 		k.EventBus = eb
 	}
 }
 
 // WithQueryBus sets a custom QueryBus.
-func WithQueryBus(qb query.Bus) func(*Kernel) {
+func WithQueryBus(qb application_query.Bus) func(*Kernel) {
 	return func(k *Kernel) {
 		k.QueryBus = qb
 	}

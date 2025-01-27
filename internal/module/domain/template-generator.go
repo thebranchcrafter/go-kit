@@ -1,16 +1,19 @@
-package module_generator
+package module_domain
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/iancoleman/strcase"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"os"
 	"path/filepath"
-	"strings"
 	"text/template"
 )
+
+//go:embed templates/*
+var templatesFS embed.FS
 
 var (
 	directories = []string{"domain", "infrastructure"}
@@ -22,35 +25,22 @@ var (
 	}
 )
 
-//go:embed templates/*
-var templatesFS embed.FS
-
-type FileCreator struct{}
-
-func NewFileCreator() *FileCreator {
-	return &FileCreator{}
+type TemplateGenerator struct {
 }
 
-func (c FileCreator) Create(moduleName string, basePath string, packageName string) error {
-	err := c.createDirectories(basePath)
+func NewTemplateGenerator() *TemplateGenerator {
+	return &TemplateGenerator{}
+}
+
+func (vg *TemplateGenerator) Generate(basePath string, variables *ModuleGeneratorVariables) error {
+	err := vg.createDirectories(basePath)
 	if err != nil {
 		return err
 	}
 
-	// Template data
-	data := map[string]string{
-		"ClassName":      strcase.ToCamel(moduleName),
-		"ClassInitial":   toAbbreviation(moduleName),
-		"FullModuleName": packageName,
-		"ModuleName":     strings.Title(moduleName),
-		"PackageName":    strings.ToLower(moduleName),
-		"RepositoryName": fmt.Sprintf("%sRepository", strings.Title(moduleName)),
-	}
-
-	// Create files using templates
 	for filePathTemplate, fileTemplatePath := range templates {
 		// Render the file path
-		filePath := renderTemplate(filePathTemplate, data)
+		filePath := renderTemplate(filePathTemplate, variables.ToArray())
 
 		// Read the template content from embedded FS
 		fileContent, err := readTemplateFile(fileTemplatePath)
@@ -59,7 +49,7 @@ func (c FileCreator) Create(moduleName string, basePath string, packageName stri
 		}
 
 		// Render the file content
-		renderedContent := renderTemplate(fileContent, data)
+		renderedContent := renderTemplate(fileContent, variables.ToArray())
 
 		// Full file path
 		fullPath := filepath.Join(basePath, filePath)
@@ -81,13 +71,13 @@ func (c FileCreator) Create(moduleName string, basePath string, packageName stri
 	return nil
 }
 
-func (c *FileCreator) createDirectories(basePath string) error {
+func (vg *TemplateGenerator) createDirectories(basePath string) error {
 	for _, dir := range directories {
 		path := filepath.Join(basePath, dir)
 		if err := os.MkdirAll(path, 0755); err != nil {
 			return err
 		}
-		color.New(color.FgCyan).Printf("Created directory: %s\n", path)
+		_, _ = color.New(color.FgCyan).Printf("Created directory: %s\n", path)
 	}
 
 	return nil
@@ -104,8 +94,10 @@ func readTemplateFile(filePath string) (string, error) {
 
 // renderTemplate renders a template string with the provided data
 func renderTemplate(templateStr string, data map[string]string) string {
+	titleCaser := cases.Title(language.English)
+
 	tmpl, err := template.New("template").Funcs(template.FuncMap{
-		"Title": strings.Title,
+		"Title": titleCaser.String,
 	}).Parse(templateStr)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse template: %s", err))
@@ -117,15 +109,4 @@ func renderTemplate(templateStr string, data map[string]string) string {
 	}
 
 	return buf.String()
-}
-
-func toAbbreviation(input string) string {
-	parts := strings.Split(input, "_")
-	var abbreviation string
-	for _, part := range parts {
-		if len(part) > 0 {
-			abbreviation += string(part[0])
-		}
-	}
-	return strings.ToLower(abbreviation)
 }
