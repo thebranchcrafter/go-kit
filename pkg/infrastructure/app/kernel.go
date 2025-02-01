@@ -16,7 +16,7 @@ type CommonDependencies struct {
 	Router         *gin.Engine
 	CommandBus     application_command.Bus
 	QueryBus       application_query.Bus
-	EventBus       application_event.Bus
+	EventBus       application_event.EventBus
 	ResponseWriter http_response.ResponseWriter
 	Logger         logger.Logger
 }
@@ -57,7 +57,7 @@ func WithCommandBus(cb application_command.Bus) func(*Kernel) {
 }
 
 // WithEventBus sets a custom WithEventBus.
-func WithEventBus(eb application_event.Bus) func(*Kernel) {
+func WithEventBus(eb application_event.EventBus) func(*Kernel) {
 	return func(k *Kernel) {
 		k.EventBus = eb
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/thebranchcrafter/go-kit/pkg/domain"
 )
 
-// Bus is the interface for subscribing to and publishing events.
-type Bus interface {
+// EventBus is the interface for subscribing to and publishing events.
+type EventBus interface {
 	Publish(ctx context.Context, event domain.Event) error
 }
