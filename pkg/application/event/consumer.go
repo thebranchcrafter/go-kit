@@ -60,7 +60,7 @@ func (c *EventConsumer) Start(ctx context.Context, stopChan chan struct{}) {
 				}()
 
 				// Fetch message
-				msg, err := c.broker.FetchMessage(ctx, c.messageName)
+				msg, err := c.broker.FetchMessage(ctx)
 				if err != nil {
 					log.Printf("Error fetching message: %s\n", err)
 					c.sendError(err, nil)
