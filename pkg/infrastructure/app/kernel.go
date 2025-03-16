@@ -110,6 +110,11 @@ func (k *Kernel) AddModule(m Module) error {
 	return nil
 }
 
+// GetModule get module by name
+func (k *Kernel) GetModule(moduleName string) Module {
+	return k.Modules[moduleName]
+}
+
 // RegisterRoutes allows each module to register its routes.
 func (k *Kernel) RegisterRoutes() {
 	for _, module := range k.Modules {
